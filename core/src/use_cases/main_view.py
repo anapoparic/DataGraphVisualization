@@ -74,9 +74,35 @@ class MainView(object):
     def filter_graph(self, attribute: str, operator: str, value: str, workspace: Workspace, result_graph: Graph):
         pass
 
-
-
     def search_graph(self, search_word: str, workspace: Workspace, result_graph: Graph):
-        pass
+        workspace_graph = workspace.current_graph
+        visited_nodes = set()
+        for node in workspace_graph.nodes:
+            if self.is_search_successful(search_word, node):
+                result_graph.add_node(node.data, node.node_id)
+                visited_nodes.add(node.node_id)  # Dodajemo node_id umesto samog node-a
+
+                # Pronalaženje i dodavanje susednih čvorova
+                neighbours = self.get_neighbours(node)
+                for neighbour in neighbours:
+                    if neighbour.node_id not in visited_nodes:
+                        result_graph.add_node(neighbour.data, neighbour.node_id)
+                        visited_nodes.add(neighbour.node_id)
+        # add edges
+        if result_graph.get_node_count() > 0:
+            root = result_graph.nodes[0]
+            result_graph.set_root(root)
+            for edge in workspace_graph.edges:
+                if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
+                    result_graph.add_edge(edge.source, edge.destination)
+        workspace.set_current_graph(result_graph)
+        return self.visualizers[workspace.visualizer_id].plugin.show(result_graph)
 
 
+    def is_search_successful(self, search_word, node: Node):
+        if search_word in str(node.node_id):
+            return True
+        for value in node.data.values():
+            if search_word in str(value):
+                return True
+        return False
