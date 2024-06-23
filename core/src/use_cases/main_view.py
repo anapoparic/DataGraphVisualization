@@ -72,7 +72,43 @@ class MainView(object):
             return self.search_graph(search_word, workspace, result_graph)
 
     def filter_graph(self, attribute: str, operator: str, value: str, workspace: Workspace, result_graph: Graph):
-        pass
+        workspace_graph = workspace.current_graph
+        for node in workspace_graph.nodes:
+            if self.is_filter_successful(node, attribute, operator, value):
+                result_graph.add_node(node.data, node.node_id)
+        # add edges
+        if result_graph.get_node_count() > 0:
+            root = result_graph.nodes[0]
+            result_graph.set_root(root)
+            for edge in workspace_graph.edges:
+                if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
+                    result_graph.add_edge(edge.source, edge.destination)
+        workspace.set_current_graph(result_graph)
+        return self.visualizers[workspace.visualizer_id].plugin.show(result_graph)
+
+    def compare(self, attribute_value: str, operator: str, value: str) -> bool:
+        if operator in operators:
+            return operators[operator](attribute_value, value)
+        return False
+
+    def is_filter_successful(self, node: Node, attribute: str, operator: str, value: str) -> bool:
+        if attribute == "id":
+            return self.compare(node.node_id, operator, value)
+        else:
+            try:
+                data = node.data
+                if attribute not in data:
+                    return False  # Atribut nije prisutan u podacima čvora
+
+                data_type = type(data[attribute])
+                try:
+                    converted_value = data_type(value)
+                except ValueError:
+                    return False  # Neuspešna konverzija vrednosti u očekivani tip
+
+                return self.compare(data[attribute], operator, converted_value)
+            except:
+                return False
 
     def search_graph(self, search_word: str, workspace: Workspace, result_graph: Graph):
         workspace_graph = workspace.current_graph
