@@ -12,7 +12,8 @@ class Node:
     def __str__(self):
         return str(self.node_id)
 
-
+from operator import eq, gt, ge, lt, le, ne
+import re
 class Edge:
     def __init__(self, edge_id: int, source: Node, destination: Node, directed: bool):
         self.edge_id = edge_id
@@ -29,10 +30,11 @@ class Edge:
 
 
 class Graph:
-    def __init__(self, name: str, edges: list[Edge], nodes: list[Node]):
+    def __init__(self, name: str, edges: list[Edge], nodes: list[Node], root: Node):
         self.name = name
         self.edges = edges
         self.nodes = nodes
+        self.root = root
 
     # def add_node(self, data: dict) -> Node:
     #     if len(self.nodes) != 0:
@@ -45,6 +47,9 @@ class Graph:
     #
     #     self.nodes.append(new_node)
     #     return new_node
+
+    def set_root(self, root: Node):
+        self.root = root
 
     def add_node(self, data: dict, node_id) -> Node:
         if len(self.nodes) != 0:
@@ -115,3 +120,99 @@ class Graph:
             visited.append(node)
             for neighbour in self.get_neighbours_undirected(node):
                 self.dfs_undirected(visited, neighbour)
+
+    def search_graph(self):
+        search_word = input("Unesite rec za pretragu: ")
+        result_graph: Graph = Graph("Graph", [], [], None)
+        visited_nodes = set()
+        for node in self.nodes:
+            if self.is_search_successful(search_word, node):
+                result_graph.add_node(node.data, node.node_id)
+                visited_nodes.add(node.node_id)  # Dodajemo node_id umesto samog node-a
+
+                # Pronalaženje i dodavanje susednih čvorova
+                neighbours = self.get_neighbours(node)
+                for neighbour in neighbours:
+                    if neighbour.node_id not in visited_nodes:
+                        result_graph.add_node(neighbour.data, neighbour.node_id)
+                        visited_nodes.add(neighbour.node_id)
+        # add edges
+        if result_graph.get_node_count() > 0:
+            root = result_graph.nodes[0]
+            result_graph.set_root(root)
+            for edge in self.edges:
+                if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
+                    result_graph.add_edge(edge.source, edge.destination)
+        print(result_graph);
+
+    def is_search_successful(self, search_word, node: Node):
+        if search_word in str(node.node_id):
+            return True
+        for value in node.data.values():
+            if search_word in str(value):
+                return True
+        return False
+
+    def filter_graph(self):
+        search_word = input("Unesite query za filtriranje: ")
+
+        pattern = r'(\w+)\s*(==|>=?|<=?|!=)\s*(.+)'
+        match = re.match(pattern, search_word)
+
+        if match:
+            attribute = match.group(1)
+            operator = match.group(2)
+            value = match.group(3)
+
+            result_graph = Graph("Graph", [], [], None)
+
+            for node in self.nodes:
+                if self.is_filter_successful(node, attribute, operator, value):
+                    result_graph.add_node(node.data, node.node_id)
+
+            # Dodavanje grana u rezultujući graf
+            if result_graph.get_node_count() > 0:
+                root = result_graph.nodes[0]
+                result_graph.set_root(root)
+                for edge in self.edges:
+                    if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
+                        result_graph.add_edge(edge.source, edge.destination)
+
+            print(result_graph)
+        else:
+            print("Unos nije u validnom formatu.")
+
+    def compare(self, attribute_value: str, operator: str, value: str) -> bool:
+        if operator in operators:
+            return operators[operator](attribute_value, value)
+        return False
+
+    def is_filter_successful(self, node: Node, attribute: str, operator: str, value: str) -> bool:
+        if attribute == "id":
+            return self.compare(node.node_id, operator, value)
+        else:
+            try:
+                data = node.data
+                if attribute not in data:
+                    return False  # Atribut nije prisutan u podacima čvora
+
+                data_type = type(data[attribute])
+                try:
+                    converted_value = data_type(value)
+                except ValueError:
+                    return False  # Neuspešna konverzija vrednosti u očekivani tip
+
+                return self.compare(data[attribute], operator, converted_value)
+            except:
+                return False
+
+operators = {
+    '==': eq,
+    '>': gt,
+    '>=': ge,
+    '<': lt,
+    '<=': le,
+    '!=': ne
+}
+
+
