@@ -1,8 +1,6 @@
 from api.src.services.base_provider import SourcePlugin
 from api.src.types.config import Config
-
 import requests
-
 from api.src.types.graph import Graph
 
 headers = {
@@ -15,7 +13,6 @@ def load_players():
     url = "https://euro-20242.p.rapidapi.com/players"
     response = requests.get(url, headers=headers)
     data = response.json()
-
     return data
 
 
@@ -23,12 +20,11 @@ def load_groups():
     url = "https://euro-20242.p.rapidapi.com/groups"
     response = requests.get(url, headers=headers)
     data = response.json()
-
     return data
 
 
-def add_node(graph, data):
-    return graph.add_node(data)
+def add_node(graph, data, node_id):
+    return graph.add_node(data, node_id)
 
 
 def add_edge(graph, source, destination):
@@ -45,20 +41,38 @@ def load_graph():
     groups_dict = {}
 
     for group in groups:
-        group_node = graph.add_node(group, group["_id"])
+        group_data = {
+            "name": group["name"],
+            "number_of_teams": len(group["teams"]),
+            "number_of_matches": len(group["matches"])
+        }
+        group_node = graph.add_node(group_data, group["_id"])
         groups_dict[group["_id"]] = group_node
 
     for player in players:
+        player_data = {
+            "name": player["name"],
+            "team_name": player["team"]["name"],
+            "position": player["position"],
+            "dateOfBirth": player["dateOfBirth"],
+            "club": player["club"],
+            "goals": player["goals"],
+            "minutesPlayed": player["minutesPlayed"]
+        }
         team = player['team']
-        group_id = team['group']
+        team_data = {
+            "name": team["name"],
+            "coach": team["coach"],
+            "captain": team["captain"],
+            "championships": team["championships"],
+            "number_of_players": len(team["players"])
+        }
 
-        player_node = graph.add_node(player, player["_id"])
-        team_node = graph.add_node(team, team["_id"])
+        player_node = graph.add_node(player_data, player["_id"])
+        team_node = graph.add_node(team_data, team["_id"])
 
         graph.add_edge(player_node, team_node)
-
-        graph.add_edge(groups_dict[group_id], team_node)
-        # graph.add_edge(group_node, player_node)
+        graph.add_edge(groups_dict[team["group"]], team_node)
 
     return graph
 
@@ -69,7 +83,7 @@ print(graph2)
 
 class DataSource(SourcePlugin):
     def load(self, config: dict):
-        return load_graph(config)
+        return load_graph()
 
     def identifier(self):
         return "graph-football-datasource"
