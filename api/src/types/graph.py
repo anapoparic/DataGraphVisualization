@@ -1,4 +1,3 @@
-
 class Node:
     def __init__(self, node_id: int, data: dict):
         self.node_id = node_id
@@ -15,45 +14,64 @@ class Node:
 
 
 class Edge:
-    def __init__(self, edge_id: int, data: dict, source: Node, destination: Node, directed: bool):
+    def __init__(self, edge_id: int, source: Node, destination: Node, directed: bool):
         self.edge_id = edge_id
-        self.data = data
         self.source = source
         self.destination = destination
         self.directed = directed
 
     def __str__(self):
-        return str(self.edge_id) + "{  " + str(self.data) + "  }" + "   source: " + str(
+        return str(self.edge_id) + "   source: " + str(
             self.source) + "   destination: " + str(self.destination)
+
+    def __eq__(self, other) -> bool:
+        return self.source == other.source and self.destination == other.destination
 
 
 class Graph:
-    def __init__(self, name: str, root: Node, edges: list[Edge], nodes: list[Node]):
+    def __init__(self, name: str, edges: list[Edge], nodes: list[Node]):
         self.name = name
-        self.root = root
         self.edges = edges
         self.nodes = nodes
 
-    def set_root(self, root: Node):
-        self.root = root
+    # def add_node(self, data: dict) -> Node:
+    #     if len(self.nodes) != 0:
+    #         new_node = Node(self.nodes[-1].node_id + 1, data)
+    #         for node in self.nodes:
+    #             if new_node == node:
+    #                 return node
+    #     else:
+    #         new_node = Node(1, data)
+    #
+    #     self.nodes.append(new_node)
+    #     return new_node
 
-    def add_node(self, node: Node):
-        if node not in self.nodes:
-            self.nodes.append(node)
+    def add_node(self, data: dict, node_id) -> Node:
+        if len(self.nodes) != 0:
+            new_node = Node(node_id, data)
+            for node in self.nodes:
+                if node_id == node.node_id:
+                    return node
+        else:
+            new_node = Node(node_id, data)
 
-    def get_node(self, node_id):
-        for node in self.nodes:
-            if node.node_id == node_id:
-                return node
+        self.nodes.append(new_node)
+        return new_node
 
-    def add_edge(self, edge: Edge):
-        self.edges.append(edge)
+    def add_edge(self, source: Node, destination: Node) -> Edge:
+        if len(self.edges) != 0:
+            new_edge = Edge(self.edges[-1].edge_id + 1, source, destination, False)
+            for edge in self.edges:
+                if edge == new_edge:
+                    return edge
+        else:
+            new_edge = Edge(1, source, destination, False)
+
+        self.edges.append(new_edge)
+        return new_edge
 
     def get_node_count(self) -> int:
         return len(self.nodes)
-
-    def add_edges(self, edges: list[Edge]):
-        pass
 
     def get_neighbours(self, node: Node):
         neighbours = []
@@ -68,8 +86,6 @@ class Graph:
                     neighbours.append(edge.source)
         return neighbours
 
-
-
     def __str__(self):
         nodes_str = ""
         edges_str = ""
@@ -77,8 +93,7 @@ class Graph:
             nodes_str += str(node) + '\n'
         for edge in self.edges:
             edges_str += str(edge) + '\n'
-        return "Name: " + self.name + "\nRoot: " + str(
-            self.root) + '\n' + "Nodes: \t\t" + nodes_str + "Edges: \t\t" + edges_str
+        return "Name: " + self.name + '\n' + "Nodes: \t\t" + nodes_str + "Edges: \t\t" + edges_str
 
     def dfs(self, visited: list[Node], node: Node):  # function for dfs
         if node not in visited:
