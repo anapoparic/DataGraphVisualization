@@ -1,116 +1,109 @@
-{% block simple_view %}
+{% block simple_visualizer %}
 <style>
 
 .node {
   cursor: pointer;
-  color: #3182bd;
-
+  color: #d62728;
 }
 
-.link {
+.edge {
   fill: none;
-  stroke: #9ecae1;
-  stroke-width: 1.5px;
+  stroke: #ff9896;
+  stroke-width: 2px;
 }
 
-#rct{
-    stroke: white;
+#backgroundRect{
+    stroke: #e7ba52;
     stroke-width: 3;
-    fill: none;
+    fill: #e7ba52;
+    opacity: 0.1;
 }
 
 </style>
 <script>
-    function nodeClick(el){
-        console.log(el);
-      // alert("ID: "+ el.textContent);
+    function onNodeClick(element){
+        console.log(element);
+      // alert("ID: "+ element.textContent);
     }
 </script>
 
-
 <script>
 
-    var nodes = {{ nodes | safe }}
-    var links = {{ links | safe }}
+    var graphNodes = {{ nodes | safe }}
+    var graphEdges = {{ edges | safe }}
 
-    var nodes_dict = nodes.reduce(function(acc, node) {
-        acc[node.node_id] = node;
-        return acc;
+    var nodesLookup = graphNodes.reduce(function(accumulator, node) {
+        accumulator[node.node_id] = node;
+        return accumulator;
     }, {});
 
-    var nodes_dict = nodes.reduce(function(acc, node) {
-        acc[node.node_id] = node;
-        return acc;
-    }, {});
-
-    var force = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(links).id(function(d) { return d.node_id; }).distance(200))
+    var forceSimulation = d3.forceSimulation(graphNodes)
+        .force('link', d3.forceLink(graphEdges).id(function(d) { return d.node_id; }).distance(200))
         .force('charge', d3.forceManyBody().strength(-300))
         .force('center', d3.forceCenter(1000 / 2, 1000 / 2))
-        .on('tick', tick);
+        .on('tick', onTick);
 
-    var drag = d3.drag()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended);
+    var dragHandler = d3.drag()
+        .on('start', onDragStart)
+        .on('drag', onDragged)
+        .on('end', onDragEnd);
 
-    var zoom = d3.zoom()
+    var zoomHandler = d3.zoom()
         .scaleExtent([0.2, 10])
-        .on('zoom', zoomed);
+        .on('zoom', onZoomed);
 
-    var svg = d3.select('#visualization')
+    var svgCanvas = d3.select('#visualization')
         .attr('width', 1000)
         .attr('height', 1000)
-        .call(zoom);
+        .call(zoomHandler);
 
-    var container = svg.append('g');
+    var graphContainer = svgCanvas.append('g');
 
-    var rect = container.append("rect")
-        .attr("id","rct")
+    var backgroundRect = graphContainer.append("rect")
+        .attr("id","backgroundRect")
         .attr("width", 1400)
         .attr("height", 1000)
 
-    var link = container.selectAll('.link')
-        .data(links)
+    var edgeElements = graphContainer.selectAll('.edge')
+        .data(graphEdges)
         .enter().append('line')
-        .attr('class', 'link');
+        .attr('class', 'edge');
 
-    var node = container.selectAll('.node')
-        .data(nodes)
+    var nodeElements = graphContainer.selectAll('.node')
+        .data(graphNodes)
         .enter().append('g')
         .attr('class', 'node')
         .attr('id', function(d) { return d.name; })
-        .call(drag);
+        .call(dragHandler);
 
-    node.append('circle')
-        .attr('r', 25)
-        .attr('fill', 'lightgrey');
+    nodeElements.append('circle')
+        .attr('r', 30)
+        .attr('fill', '#ff9896');
 
-    node.append('text')
+    nodeElements.append('text')
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'central')
-        .attr('fill', 'black')
+        .attr('fill', '#d62728')
         .text(function(d) { return d.node_id; });
 
-    function tick(e) {
-        node.attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
+    function onTick(e) {
+        nodeElements.attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
 
-        link.attr('x1', function(d) { return d.source.x; })
+        edgeElements.attr('x1', function(d) { return d.source.x; })
             .attr('y1', function(d) { return d.source.y; })
             .attr('x2', function(d) { return d.target.x; })
             .attr('y2', function(d) { return d.target.y; });
     }
 
-    function zoomed() {
+    function onZoomed() {
+        graphContainer.attr("transform", d3.event.transform);
 
-        container.attr("transform", d3.event.transform);
+        const transform = d3.event.transform;
 
-        const centerTransform = d3.event.transform;
-
-        const scaleX = centerTransform.k;
-        const scaleY = centerTransform.k;
-        const translateX = centerTransform.x;
-        const translateY = centerTransform.y;
+        const scaleX = transform.k;
+        const scaleY = transform.k;
+        const translateX = transform.x;
+        const translateY = transform.y;
 
         const rectWidth = 1400 / scaleX;
         const rectHeight = 1000 / scaleY;
@@ -118,25 +111,25 @@
         const rectX = -translateX / scaleX;
         const rectY = -translateY / scaleY;
 
-        rect.attr("x", rectX)
+        backgroundRect.attr("x", rectX)
             .attr("y", rectY)
             .attr("width", rectWidth)
             .attr("height", rectHeight)
     }
 
-    function dragstarted(d) {
-        if (!d3.event.active) force.alphaTarget(0.3).restart();
+    function onDragStart(d) {
+        if (!d3.event.active) forceSimulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
     }
 
-    function dragged(d) {
+    function onDragged(d) {
         d.fx = d3.event.x;
         d.fy = d3.event.y;
     }
 
-    function dragended(d) {
-        if (!d3.event.active) force.alphaTarget(0);
+    function onDragEnd(d) {
+        if (!d3.event.active) forceSimulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
     }
