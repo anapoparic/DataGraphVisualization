@@ -104,8 +104,8 @@ def load_graph():
     return graph
 
 
-graph = load_graph()
-print(graph)
+# graph = load_graph()
+# print(graph)
 
 class DataSource(SourcePlugin):
     def load(self, config: dict):

@@ -6,6 +6,7 @@
             <!-- Modal content -->
             <div class="modal-content">
                 <form class="settings" method="post" action="{% url 'generated_graph' %}">
+                 {% csrf_token %}
                     {% for setting in settings %}
                         <div class="setting">
                             <label for="setting_input">{{ setting.name }}:</label>
@@ -29,15 +30,16 @@
             <span>Graph Visualizer</span>
         </div>
         <div id="select">
-            <form id="bar_form" method="post" action="{% url 'open_config' %}">
+            <form id="bar_form" method="post" action="{% url 'generated_graph' %}">
+                {% csrf_token %}
                 <div class="selection-item">
                     <label for="sources">Select source:</label>
                     <select id="sources" name="sources">
-                        {% for source_id, source in sources.items %}
-                            {% if source_id == selected_source_id %}
-                                <option selected value="{{ source_id }}">{{ source.name }}</option>
+                        {% for source_name, source in sources.items %}
+                            {% if source.id == source_id %}
+                                <option selected value="{{ source.id }}">{{ source.plugin.name }}</option>
                             {% else %}
-                                <option value="{{ source_id }}">{{ source.name }}</option>
+                                <option value="{{ source.id }}">{{ source.plugin.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -48,9 +50,9 @@
                         {% for visualizer_id, visualizer in visualizers.items %}
                             {% if visualizer_id == visualizer.plugin_id %}
                                 <option selected
-                                        value="{{ visualizer_id }}">{{ visualizer.name }}</option>
+                                        value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
                             {% else %}
-                                <option value="{{ visualizer_id }}">{{ visualizer.name }}</option>
+                                <option value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
