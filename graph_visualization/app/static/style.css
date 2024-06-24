@@ -72,6 +72,8 @@ select {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: center;
+    align-content: center;
     font-size: 14px;
 }
 
