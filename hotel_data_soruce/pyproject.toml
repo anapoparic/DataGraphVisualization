@@ -3,11 +3,11 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "football_data_source_plugin"
+name = "hotel_data_source_plugin"
 authors = [
     {name = "Vesna Vasic"}
 ]
-description = "Football data source plugin for graph visualization"
+description = "Hotel data source plugin for graph visualization"
 requires-python = ">=3.7"
 version = "0.1"
 dependencies = [
@@ -17,4 +17,4 @@ dependencies = [
 [project.scripts]
 
 [project.entry-points."graph.sources"]
-load = "football_data_source.src.plugin.data_source"
+load = "hotel_data_soruce.src.plugin.data_source"

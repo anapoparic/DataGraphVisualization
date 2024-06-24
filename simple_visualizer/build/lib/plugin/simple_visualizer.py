@@ -1,3 +1,5 @@
+from abc import ABC
+
 from api.src.services.base_visualizer import VisualizerPlugin
 from jinja2 import Environment, FileSystemLoader
 
@@ -23,11 +25,12 @@ def prepare_context(graph):
 
 
 class GraphVisualizer(VisualizerPlugin):
-    def visualize(self, graph: Graph):
-        context = prepare_context(self, graph)
+
+    def visualize(self, graph):
+        context = prepare_context(graph)
         template_dir = "../simple_visualizer/src/plugin"
         env = Environment(loader=FileSystemLoader(template_dir))
-        template = env.get_template("mainView.html")
+        template = env.get_template("visualization.html")
         return template.render(context)
 
     def identifier(self):
