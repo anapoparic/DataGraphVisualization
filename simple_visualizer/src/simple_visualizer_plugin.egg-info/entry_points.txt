@@ -1,2 +1,2 @@
 [graph.visualizers]
-load = plugin.simple_visualizer
+load = simple_visualizer.src.plugin.simple_visualizer
