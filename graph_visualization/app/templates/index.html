@@ -33,11 +33,11 @@
                 <div class="selection-item">
                     <label for="sources">Select source:</label>
                     <select id="sources" name="sources">
-                        {% for source in sources %}
-                            {% if source_id == source.plugin_id %}
-                                <option selected value="{{ source.plugin_id }}">{{ source.plugin.name }}</option>
+                        {% for source_id, source in sources.items %}
+                            {% if source_id == selected_source_id %}
+                                <option selected value="{{ source_id }}">{{ source.name }}</option>
                             {% else %}
-                                <option value="{{ source.plugin_id }}">{{ source.plugin.name }}</option>
+                                <option value="{{ source_id }}">{{ source.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -45,12 +45,12 @@
                 <div class="selection-item">
                     <label for="visualizers">Select visualizer:</label>
                     <select id="visualizers" name="visualizers">
-                        {% for visualizer in visualizers %}
+                        {% for visualizer_id, visualizer in visualizers.items %}
                             {% if visualizer_id == visualizer.plugin_id %}
                                 <option selected
-                                        value="{{ visualizer.plugin_id }}">{{ visualizer.plugin.name }}</option>
+                                        value="{{ visualizer_id }}">{{ visualizer.name }}</option>
                             {% else %}
-                                <option value="{{ visualizer.plugin_id }}">{{ visualizer.plugin.name }}</option>
+                                <option value="{{ visualizer_id }}">{{ visualizer.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>

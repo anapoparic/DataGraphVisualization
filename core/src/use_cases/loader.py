@@ -31,7 +31,7 @@ class Loader():
         for entry_point in self.data_source_eps:
             plugin = entry_point.load()
             plugin_instance = Plugin(plugin.DataSource(), plugin_id, name=plugin.DataSource().name())
-            print("NAMEEE " + plugin_instance.name);
+            print("NAMEEE " + plugin_instance.name)
             self.sources[plugin_id] = plugin_instance
             plugin_id+=1
 
@@ -39,6 +39,7 @@ class Loader():
         for entry_point in self.visualizer_eps:
             plugin = entry_point.load()
             plugin_instance = Plugin(plugin.GraphVisualizer(), plugin_id, name=plugin.GraphVisualizer().name())
+            print("NAMEEE " + plugin_instance.name)
             self.visualizers[plugin_id] = plugin_instance
             plugin_id+=1
 

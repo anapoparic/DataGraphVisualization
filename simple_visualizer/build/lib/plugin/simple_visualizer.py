@@ -34,4 +34,4 @@ class GraphVisualizer(VisualizerPlugin):
         return "Simple_Graph_Visualizer"
 
     def name(self):
-        return "Show graph with simple visualizer"
+        return "Simple Visualizer"
