@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "football_data_source_plugin"
+authors = [
+    {name = "Vesna Vasic"}
+]
+description = "Football data source plugin for graph visualization"
+requires-python = ">=3.7"
+version = "0.1"
+dependencies = [
+    "requests>=2.32.3"
+]
+
+[project.scripts]
+
+[project.entry-points."graph.sources"]
+load = "plugin.data_source"

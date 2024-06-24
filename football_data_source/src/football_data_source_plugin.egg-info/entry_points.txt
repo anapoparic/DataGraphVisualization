@@ -1,0 +1,2 @@
+[graph.sources]
+load = plugin.data_source

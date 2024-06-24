@@ -1,0 +1,9 @@
+pyproject.toml
+src/football_data_source_plugin.egg-info/PKG-INFO
+src/football_data_source_plugin.egg-info/SOURCES.txt
+src/football_data_source_plugin.egg-info/dependency_links.txt
+src/football_data_source_plugin.egg-info/entry_points.txt
+src/football_data_source_plugin.egg-info/requires.txt
+src/football_data_source_plugin.egg-info/top_level.txt
+src/plugin/__init__.py
+src/plugin/data_source.py
