@@ -1,0 +1,87 @@
+<style>
+    #visualization {
+        width: 100%;
+        height: 100%;
+    }
+
+    #node-info {
+        position: relative;
+        padding: 10px;
+        background: white;
+        font-size: 10px;
+        width: 90%;
+        margin: 10px auto;
+        margin-bottom: -60px;
+        border-radius: 15px;
+        height: 30px;
+        word-wrap: break-word;
+        z-index: 1;
+    }
+
+</style>
+<div id="node-info"></div>
+<svg id="visualization">
+    {{ visualization_html|safe }}
+</svg>
+
+<script>
+    var clicked_object = null
+
+    function mouseOverFunction(d) {
+        let info = "";
+        for (const [key, value] of Object.entries(d.data)) {
+            info += key + ' : ' + value + ' | '
+        }
+        document.getElementById("node-info").innerHTML = info
+    }
+
+    function clickFunction(d) {
+        if (clicked_object != null) {
+            clicked_object.clicked = null
+        }
+        clicked_object = d
+        d.clicked = true
+        update()
+        notifyTreeView(d.node_id);
+
+
+    }
+
+    var nodes = d3.selectAll("#graph g g")
+        .on('mouseover', function (d) {
+            mouseOverFunction(d);
+        })
+        .on('click', function (d) {
+            clickFunction(d);
+        })
+
+
+    function updateMainViewClicked(node_id) {
+        nodes.each(function (node) {
+            if (node.node_id === node_id) {
+                if (clicked_object != null) {
+                    clicked_object.clicked = null
+                }
+                clicked_object = node
+                node.clicked = true
+                update()
+            }
+        })
+    }
+
+    let update = function () {
+        nodes.each(function () {
+            const parent = d3.select(this);
+            parent.select("text")
+                .attr("fill", function (parent) {
+                    if (parent.clicked) {
+                        return "red"
+                    } else {
+                        return "black"
+                    }
+                })
+        })
+    }
+
+
+</script>

@@ -1,0 +1,2 @@
+[graph.visualizers]
+load = plugin.simple_visualizer

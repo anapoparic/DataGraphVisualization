@@ -1,0 +1,145 @@
+{% block simple_view %}
+<style>
+
+.node {
+  cursor: pointer;
+  color: #3182bd;
+
+}
+
+.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
+}
+
+#rct{
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+}
+
+</style>
+<script>
+    function nodeClick(el){
+        console.log(el);
+      // alert("ID: "+ el.textContent);
+    }
+</script>
+
+
+<script>
+
+    var nodes = {{ nodes | safe }}
+    var links = {{ links | safe }}
+
+    var nodes_dict = nodes.reduce(function(acc, node) {
+        acc[node.node_id] = node;
+        return acc;
+    }, {});
+
+    var nodes_dict = nodes.reduce(function(acc, node) {
+        acc[node.node_id] = node;
+        return acc;
+    }, {});
+
+    var force = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(function(d) { return d.node_id; }).distance(200))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(1000 / 2, 1000 / 2))
+        .on('tick', tick);
+
+    var drag = d3.drag()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended);
+
+    var zoom = d3.zoom()
+        .scaleExtent([0.2, 10])
+        .on('zoom', zoomed);
+
+    var svg = d3.select('#visualization')
+        .attr('width', 1000)
+        .attr('height', 1000)
+        .call(zoom);
+
+    var container = svg.append('g');
+
+    var rect = container.append("rect")
+        .attr("id","rct")
+        .attr("width", 1400)
+        .attr("height", 1000)
+
+    var link = container.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
+
+    var node = container.selectAll('.node')
+        .data(nodes)
+        .enter().append('g')
+        .attr('class', 'node')
+        .attr('id', function(d) { return d.name; })
+        .call(drag);
+
+    node.append('circle')
+        .attr('r', 25)
+        .attr('fill', 'lightgrey');
+
+    node.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'central')
+        .attr('fill', 'black')
+        .text(function(d) { return d.node_id; });
+
+    function tick(e) {
+        node.attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
+
+        link.attr('x1', function(d) { return d.source.x; })
+            .attr('y1', function(d) { return d.source.y; })
+            .attr('x2', function(d) { return d.target.x; })
+            .attr('y2', function(d) { return d.target.y; });
+    }
+
+    function zoomed() {
+
+        container.attr("transform", d3.event.transform);
+
+        const centerTransform = d3.event.transform;
+
+        const scaleX = centerTransform.k;
+        const scaleY = centerTransform.k;
+        const translateX = centerTransform.x;
+        const translateY = centerTransform.y;
+
+        const rectWidth = 1400 / scaleX;
+        const rectHeight = 1000 / scaleY;
+
+        const rectX = -translateX / scaleX;
+        const rectY = -translateY / scaleY;
+
+        rect.attr("x", rectX)
+            .attr("y", rectY)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+    }
+
+    function dragstarted(d) {
+        if (!d3.event.active) force.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) force.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+</script>
+{% endblock %}
