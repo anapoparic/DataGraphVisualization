@@ -1,0 +1,54 @@
+<style>
+    .width100 {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<svg id="bird_view_svg" class="width100"></svg>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+    function updateBirdView() {
+
+        const originalSVG = d3.select("#graph svg");
+        const copiedSVG = originalSVG.clone(true);
+        const targetSVG = d3.select("#bird-view");
+
+        targetSVG.selectAll("*").remove();
+        targetSVG.node().appendChild(copiedSVG.node());
+
+        var mainWidth = originalSVG.select("g").node().getBBox().width;
+        var mainHeight = originalSVG.select("g").node().getBBox().height;
+
+        var birdWidth = targetSVG.node().clientWidth;
+        var birdHeight = targetSVG.node().clientHeight;
+
+        var scaleWidth = birdWidth / mainWidth;
+        var scaleHeight = birdHeight / mainHeight;
+
+        var scale = Math.min(scaleWidth, scaleHeight);
+
+        var x = targetSVG.select("g").node().getBBox().x;
+        var y = targetSVG.select("g").node().getBBox().y;
+
+        targetSVG.select("g").attr("transform", "translate(" + [-x * scale, -y * scale] + ") scale(" + scale + ")");
+        
+
+    }
+
+    function observeOriginalSVGChanges() {
+        const originalSVG = d3.select("#graph svg").node();
+
+        const observer = new MutationObserver(function(mutationsList, observer) {
+            for (const mutation of mutationsList) {
+                    updateBirdView();
+                    break;
+            }
+        });
+
+        observer.observe(originalSVG, { childList: true, subtree: true, attributes: true });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        observeOriginalSVGChanges();
+    });
+    </script>

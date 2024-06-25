@@ -1,0 +1,9 @@
+pyproject.toml
+src/block_visualizer_plugin.egg-info/PKG-INFO
+src/block_visualizer_plugin.egg-info/SOURCES.txt
+src/block_visualizer_plugin.egg-info/dependency_links.txt
+src/block_visualizer_plugin.egg-info/entry_points.txt
+src/block_visualizer_plugin.egg-info/requires.txt
+src/block_visualizer_plugin.egg-info/top_level.txt
+src/plugin/__init__.py
+src/plugin/block_visualizer.py

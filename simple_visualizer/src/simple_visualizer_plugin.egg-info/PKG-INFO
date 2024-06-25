@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: simple_visualizer_plugin
+Version: 0.1
+Summary: Simple visualizer plugin for graph visualization
+Author: Ana Poparic
+Requires-Python: >=3.7
+Requires-Dist: jinja2>=3.1.2

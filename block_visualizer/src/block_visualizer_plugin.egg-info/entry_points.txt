@@ -1,0 +1,2 @@
+[graph.visualizers]
+bv = block_visualizer.src.plugin.block_visualizer
