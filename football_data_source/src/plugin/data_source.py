@@ -33,7 +33,7 @@ def add_edge(graph, source, destination):
 
 def load_graph():
     graph_name = "Football Graph"
-    graph = Graph(name=graph_name, edges=[], nodes=[])
+    graph = Graph(name=graph_name, edges=[], nodes=[], root=None)
 
     players = load_players()
     groups = load_groups()
@@ -77,8 +77,10 @@ def load_graph():
     return graph
 
 
+
 # graph2 = load_graph()
 # print(graph2)
+
 
 
 class DataSource(SourcePlugin):
