@@ -12,8 +12,11 @@ class Node:
     def __str__(self):
         return str(self.node_id)
 
+
 from operator import eq, gt, ge, lt, le, ne
 import re
+
+
 class Edge:
     def __init__(self, edge_id: int, source: Node, destination: Node, directed: bool):
         self.edge_id = edge_id
@@ -35,18 +38,6 @@ class Graph:
         self.edges = edges
         self.nodes = nodes
         self.root = root
-
-    # def add_node(self, data: dict) -> Node:
-    #     if len(self.nodes) != 0:
-    #         new_node = Node(self.nodes[-1].node_id + 1, data)
-    #         for node in self.nodes:
-    #             if new_node == node:
-    #                 return node
-    #     else:
-    #         new_node = Node(1, data)
-    #
-    #     self.nodes.append(new_node)
-    #     return new_node
 
     def set_root(self, root: Node):
         self.root = root
@@ -206,6 +197,7 @@ class Graph:
             except:
                 return False
 
+
 operators = {
     '==': eq,
     '>': gt,
@@ -214,5 +206,3 @@ operators = {
     '<=': le,
     '!=': ne
 }
-
-

@@ -60,10 +60,3 @@ class Loader:
 
     def is_graph_loaded(self, source_plugin_id: int, config: dict) -> bool:
         return hash(str(source_plugin_id) + str(config)) in self.loaded_graphs.keys()
-
-    def get_loaded_graph(self, source_id: int) -> Graph:
-        key = hash(str(source_id))
-        if key in self.loaded_graphs.keys():
-            return self.loaded_graphs[key]
-        else:
-            return self.load_graph(source_id)

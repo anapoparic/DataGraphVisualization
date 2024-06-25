@@ -77,10 +77,8 @@ def load_graph():
     return graph
 
 
-
 # graph2 = load_graph()
 # print(graph2)
-
 
 
 class DataSource(SourcePlugin):

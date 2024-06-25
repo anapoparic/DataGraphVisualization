@@ -1,6 +1,9 @@
 from api.src.types.graph import Graph, Node, Edge
 from operator import eq, gt, ge, lt, le, ne
 import re
+import copy
+
+from core.src.use_cases.loader import Loader
 
 operators = {
     '==': eq,
@@ -16,7 +19,7 @@ class Workspace(object):
     def __init__(self, current_graph: Graph = None, entire_graph: Graph = None):
         self.visualizer_id = -1;
         self.data_source_id = -1;
-        self.configuration = {}
+        # self.configuration = {}
         self.current_graph: Graph = current_graph;
         self.entire_graph: Graph = entire_graph;
 
@@ -25,9 +28,6 @@ class Workspace(object):
 
     def set_data_source_id(self, data_source_id: int):
         self.data_source_id = data_source_id
-
-    def set_configuration(self, configuration):
-        self.configuration = configuration
 
     def set_current_graph(self, graph: Graph):
         self.current_graph = graph
@@ -39,20 +39,45 @@ class Workspace(object):
         return self.current_graph is not None
 
 
-class MainView(object):
+class MainWorkspace(object):
     def __init__(self):
         self.workspaces: dict[int, Workspace] = {i: Workspace() for i in range(1, 4)}
-        self.current_workspace_id = 1;
+        self.current_workspace_id = 1
+        self.loader = Loader()
         # ucitati Loader klasu
-        self.data_sources = []
-        self.visualizers = []
+        self.data_sources = self.loader.sources
+        self.visualizers = self.loader.visualizers
 
     def show_workspace_graph(self, workspace_id: int):
-        return self.visualizers[self.workspaces[workspace_id].visualizer_id].plugin.show(
-            self.workspaces[workspace_id].current_graph)
+        workspace = self.workspaces[workspace_id]
+        visualizer_id = workspace.visualizer_id
+        visualizer = self.visualizers[visualizer_id]
+        graph = workspace.current_graph
+        return visualizer.plugin.visualize(graph)
 
     def get_current_workspace_graph(self, workspace_id: int):
-        return self.workspaces[workspace_id].current_graph
+        workspace = self.workspaces[workspace_id]
+        return workspace.current_graph
+
+    def load_current_workspace(self, id: int):
+        current = self.workspaces[id]
+        return current.has_current_graph()
+
+    def get_workspace(self, id: int):
+        return self.workspaces[id]
+
+    def init(self, wsc_id: int, source_id: int, visualizer_id: int):
+        workspace = self.workspaces[wsc_id]
+        graph = self.loader.load_graph(source_id)
+        workspace.set_current_graph(graph)
+
+        workspace.set_entire_graph(copy.deepcopy(self.workspaces[wsc_id].current_graph))
+        workspace.set_visualizer_id(visualizer_id)
+        workspace.set_data_source_id(source_id)
+
+        visualizer = self.visualizers[visualizer_id]
+
+        return visualizer.plugin.visualize(workspace.current_graph)
 
     def search_filter(self, search_word: str, workspace_id: int):
         pattern = r'(\w+)\s*(==|>=?|<=?|!=)\s*(.+)'
@@ -84,7 +109,7 @@ class MainView(object):
                 if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
                     result_graph.add_edge(edge.source, edge.destination)
         workspace.set_current_graph(result_graph)
-        return self.visualizers[workspace.visualizer_id].plugin.show(result_graph)
+        return self.visualizers[workspace.visualizer_id].plugin.visualize(result_graph)
 
     def compare(self, attribute_value: str, operator: str, value: str) -> bool:
         if operator in operators:
@@ -119,7 +144,7 @@ class MainView(object):
                 visited_nodes.add(node.node_id)  # Dodajemo node_id umesto samog node-a
 
                 # Pronalaženje i dodavanje susednih čvorova
-                neighbours = self.get_neighbours(node)
+                neighbours = self.get_neighbours(node, workspace_graph.edges)
                 for neighbour in neighbours:
                     if neighbour.node_id not in visited_nodes:
                         result_graph.add_node(neighbour.data, neighbour.node_id)
@@ -132,8 +157,20 @@ class MainView(object):
                 if edge.source in result_graph.nodes and edge.destination in result_graph.nodes:
                     result_graph.add_edge(edge.source, edge.destination)
         workspace.set_current_graph(result_graph)
-        return self.visualizers[workspace.visualizer_id].plugin.show(result_graph)
+        return self.visualizers[workspace.visualizer_id].plugin.visualize(result_graph)
 
+    def get_neighbours(self, node: Node, edges: list[Edge]) -> list[Node]:
+        neighbours = []
+        for edge in edges:
+            if edge.directed:
+                if node == edge.source:
+                    neighbours.append(edge.destination)
+            else:
+                if node == edge.source:
+                    neighbours.append(edge.destination)
+                if node == edge.destination:
+                    neighbours.append(edge.source)
+        return neighbours
 
     def is_search_successful(self, search_word, node: Node):
         if search_word in str(node.node_id):
@@ -142,3 +179,12 @@ class MainView(object):
             if search_word in str(value):
                 return True
         return False
+
+    def clear_filters(self, wsc_id: int):
+        workspace = self.workspaces[wsc_id]
+        entire_graph = workspace.entire_graph
+        visualizer = self.visualizers[workspace.visualizer_id]
+        if workspace.entire_graph is None:
+            return ''
+        workspace.current_graph = copy.deepcopy(entire_graph)
+        return visualizer.plugin.visualize(entire_graph)
