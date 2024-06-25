@@ -29,13 +29,11 @@
             </div>
         </div>
         <div id="top_bar">
-            
-
             <div id="select">
-                <form id="bar_form" method="post" action="{% url 'open_config' %}" style="display: flex; align-items: center;">
+                <form id="bar_form" method="post" action="{% url 'generated_graph' %}" style="display: flex; align-items: center;">
                     <div class="selection-item" style="margin-right: 20px;">
                         <label for="sources">Select Data Source:</label>
-                        <select id="sources" name="sources">
+                        <select id="sources" name="sources" onchange="handleSelectChange('sources')">
                             {% for source_id, source in sources.items %}
                                 {% if source_id == selected_source_id %}
                                     <option selected value="{{ source_id }}">{{ source.name }}</option>
@@ -47,7 +45,7 @@
                     </div>
                     <div class="selection-item" style="margin-right: 20px;">
                         <label for="visualizers">Select Visualizer:</label>
-                        <select id="visualizers" name="visualizers">
+                        <select id="visualizers" name="visualizers" onchange="handleSelectChange('visualizers')">
                             {% for visualizer_id, visualizer in visualizers.items %}
                                 {% if visualizer_id == visualizer.plugin_id %}
                                     <option selected value="{{ visualizer_id }}">{{ visualizer.name }}</option>
@@ -57,21 +55,18 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
+                   
                 </form>
             </div>
-            
             <form id="filter" method="post" action="{% url 'search_graph' %}">
                 <input id="query" type="text" name="query" placeholder="Search here.."/>
                 <a href="{% url 'clear_filters' %}" id="clear_button">Clear</a>
                 <button class="button_primary" type="submit">Filter</button>
             </form>
-
             <div class="buttons" style="display: flex; gap: 10px;">
-                <button class="button_primary center" type="submit" name="generate">Generate Graph</button>
+                <button class="button_primary center" type="button" onclick="submitGenerateForm()">Generate Graph</button>
                 <button class="button_primary center" name="show" type="submit">Show</button>
             </div>
-            
         </div>
         <div id="graph">
             {% include 'main_view.html' %}
@@ -83,4 +78,18 @@
             {% include 'tree_view.html' %}
         </div>
     </div>
+
+    <script>
+        function handleSelectChange(selectId) {
+            var selectElement = document.getElementById(selectId);
+            var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+            console.log('Select element with id "' + selectId + '" changed to: ' + selectedValue);
+        }
+
+        function submitGenerateForm() {
+            var form = document.getElementById('bar_form');
+            form.action = "{% url 'generated_graph' %}";
+            form.submit();
+        }
+    </script>
 {% endblock %}

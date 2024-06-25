@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+from django.views.decorators.csrf import csrf_exempt
 
 from core.src.use_cases.loader import Loader
 
@@ -24,9 +25,9 @@ workspace_id = 1
 def index(request):
     return render(request, 'index.html', {"sources": loader.sources,
                                           "visualizers": loader.visualizers})
-
-
+@csrf_exempt
 def generate(request):
+    print("hej tu sam pravim graf")
     return render_new_graph(request)
 
 
