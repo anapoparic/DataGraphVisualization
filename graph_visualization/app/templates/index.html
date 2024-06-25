@@ -35,10 +35,10 @@
                         <label for="sources">Select Data Source:</label>
                         <select id="sources" name="sources" onchange="handleSelectChange('sources')">
                             {% for source_id, source in sources.items %}
-                                {% if source_id == selected_source_id %}
-                                    <option selected value="{{ source_id }}">{{ source.name }}</option>
+                                {% if source.id == source_id %}
+                                    <option selected value="{{ source.id }}">{{ source.plugin.name }}</option>
                                 {% else %}
-                                    <option value="{{ source_id }}">{{ source.name }}</option>
+                                    <option value="{{ source.id }}">{{ source.plugin.name }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
@@ -48,9 +48,9 @@
                         <select id="visualizers" name="visualizers" onchange="handleSelectChange('visualizers')">
                             {% for visualizer_id, visualizer in visualizers.items %}
                                 {% if visualizer_id == visualizer.plugin_id %}
-                                    <option selected value="{{ visualizer_id }}">{{ visualizer.name }}</option>
+                                    <option selected value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
                                 {% else %}
-                                    <option value="{{ visualizer_id }}">{{ visualizer.name }}</option>
+                                    <option value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>

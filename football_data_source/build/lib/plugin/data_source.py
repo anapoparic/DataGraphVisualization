@@ -4,7 +4,7 @@ import requests
 from api.src.types.graph import Graph
 
 headers = {
-    'x-rapidapi-key': "edb880d3f4mshcc993448800b101p1d1fa4jsn0b3dec035a32",
+    'x-rapidapi-key': "55add38612msh546b5fa9a239cecp170601jsnd380624a07c9",
     'x-rapidapi-host': "euro-20242.p.rapidapi.com"
 }
 

@@ -114,7 +114,7 @@ select {
 #graph {
     grid-column: 1 / span 4;
     grid-row: 2 / span 3;
-    background-color: rgba(181, 179, 179, 0.74);
+    background-color: white;
     border-radius: 2%;
 }
 

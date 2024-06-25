@@ -8,6 +8,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 
 from core.src.use_cases.loader import Loader
+from core.src.use_cases.tree_view import TreeView
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +28,6 @@ def index(request):
                                           "visualizers": loader.visualizers})
 @csrf_exempt
 def generate(request):
-    print("hej tu sam pravim graf")
     return render_new_graph(request)
 
 
@@ -47,17 +47,15 @@ def clear_filters(request):
 def set_workspace(request, number: int):
     pass
 
-
 def render_new_graph(request):
     global source_id
     source_id = 0
     graph = loader.get_loaded_graph(source_id, "api_football_datasource")
-    print(loader.visualizers[0].plugin)
-    print("ID " + loader.visualizers[0].plugin.name())
-    # print("GRAAAAAAAAAAAAAAAAAAAAPH")
-    # print(graph)
+    tree_view = TreeView(graph)
     return render(request, 'index.html', {
         "sources": loader.sources,
         "visualizers": loader.visualizers,
-        "visualization_html": loader.visualizers[0].plugin.visualize(graph)
+        "visualization_html": loader.visualizers[0].plugin.visualize(graph),
+        "tree_view_html": tree_view.generate_tree_view()
+
     })
