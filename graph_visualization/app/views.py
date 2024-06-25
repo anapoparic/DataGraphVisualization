@@ -25,11 +25,12 @@ workspace_id = 1
 def index(request):
     return render(request, 'index.html', {"sources": loader.sources,
                                           "visualizers": loader.visualizers})
+
+
 @csrf_exempt
 def generate(request):
     print("hej tu sam pravim graf")
     return render_new_graph(request)
-
 
 
 def config(request):
@@ -49,15 +50,15 @@ def set_workspace(request, number: int):
 
 
 def render_new_graph(request):
-    global source_id
-    source_id = 0
-    graph = loader.get_loaded_graph(source_id, "api_football_datasource")
-    print(loader.visualizers[0].plugin)
-    print("ID " + loader.visualizers[0].plugin.name())
-    # print("GRAAAAAAAAAAAAAAAAAAAAPH")
-    # print(graph)
+    global workspace_id, source_id, visualizer_id
+    visualizer_id = int(request.POST.get("visualizers"))
+    source_id = int(request.POST.get("sources"))
+
+    graph = loader.get_loaded_graph(source_id)
+    visualization_html = loader.visualizers[visualizer_id].plugin.visualize(graph)
+
     return render(request, 'index.html', {
         "sources": loader.sources,
         "visualizers": loader.visualizers,
-        "visualization_html": loader.visualizers[0].plugin.visualize(graph)
+        "visualization_html": visualization_html
     })

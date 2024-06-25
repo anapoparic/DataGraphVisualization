@@ -17,4 +17,4 @@ dependencies = [
 [project.scripts]
 
 [project.entry-points."graph.visualizers"]
-bv = "block_visualizer.src.plugin.block_visualizer:GraphVisualizer"
+bv = "block_visualizer.src.plugin.block_visualizer"

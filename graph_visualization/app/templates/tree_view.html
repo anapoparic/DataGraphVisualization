@@ -1,213 +1,214 @@
-{% block tree_view %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css" media="all" rel="stylesheet">
-    <style>
-        .selected {
-            color: orange;
-        }
-
-        .node {
-            position: relative;
-            list-style: none;
-            cursor: default;
-        }
-
-        .node span {
-            margin-right: 3px;
-        }
-
-        .node .caret {
-            font-size: 10px;
-        }
-
-        .tree {
-            height: 1000px;
-            width: 500px;
-            overflow: scroll;
-        }
-
-        ul {
-            text-decoration: none;
-            padding: 0;
-            list-style-type: none;
-        }
-
-
-    </style>
-    <div class="tree"></div>
-    <script>
-        var updateTree;
-        var root;
-
-        function chart(data) {
-            console.log("THis is data ", data)
-            let margin = {top: 50, right: 40, bottom: 30, left: 20},
-                height = 600
-            barHeight = Object.keys(data.children[0].data).length * 33
-            let i = 0,
-                duration = 300;
-
-            let nodeEnterTransition = d3.transition()
-                .duration(200)
-                .ease(d3.easeLinear);
-
-            let svg = d3.select(".tree").append("svg")
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-            root = d3.hierarchy(data);
-            root.x0 = 0;
-            root.y0 = 0;
-            root.eachAfter((n) => {
-                n._children = n.children
-                n.children = null
-            })
-            update(root);
-
-
-            function update(source) {
-
-                // Compute the flattened node list.
-                var nodes = root.descendants();
-
-                var height = Math.max(2000, nodes.length * barHeight + margin.top + margin.bottom);
-
-                d3.select(".tree svg").transition()
-                    .attr("height", height)
-                    .attr("width", 1500)
-
-                var index = -1;
-                root.eachBefore((n) => {
-                    n.x = ++index * barHeight;
-                    n.y = n.depth * 20;
-                });
-
-                // Update the nodes…
-                var node = svg.selectAll(".node")
-                    .data(nodes, (d) => d.id || (d.id = ++i));
-
-                var nodeEnter = node.enter().append("g")
-                    .attr("class", "node")
-                    .attr("transform", () => "translate(" + source.y0 + "," + source.x0 + ")")
-                    .attr("id", (d) => 'id'+d.id)
-                    .on("click", click)
-                ;
-
-                // adding arrows
-                nodeEnter.append('text')
-                    .attr('x', -20)
-                    .attr('y', 2)
-                    .attr('fill', 'grey')
-                    .attr('class', 'arrow')
-                    .attr('class', 'fas')
-                    .attr('font-size', '12px')
-                    .text((d) => d.children ? '\uf107' : d._children ? '\uf105' : "");
-
-                // adding file or folder
-                nodeEnter.append('text')
-                    .attr('x', -10)
-                    .attr('y', 2)
-                    .attr('fill', (d) => d.children || d._children ? '#005ce6' : '#454545')
-                    .attr('class', 'fas')
-                    .attr('font-size', '12px')
-                    .text((d) => d.children || d._children ? '\uf03a' : '\uf111');
-
-                // adding file or folder names
-                nodeEnter.append("text")
-                    .attr("dy", 3.5)
-                    .attr("dx", 5.5)
-                    .text((d) => d.data.name)
-                    .attr("fill", (d) => d.selected ? "red" : "black");
-
-                nodeEnter.append("text")
-                    .each(function (d) {
-                        let data = []
-                        for (const [key, value] of Object.entries(d.data.data)) {
-                            data.push(key + ':' + value)
-                        }
-
-                        var text = d3.select(this)
-                            .attr("dy", 25)
-                            .attr("dx", 20)
-                            .text(data[0])
-                        for (var i = 1; i < data.length; i++) {
-                            text.append("tspan")
-                                .attr('x', 20)
-                                .attr('y', 25 + 20 * i)
-                                .text(data[i])
-                        }
-                    });
-
-                // Transition nodes to their new position.
-                nodeEnter.transition(nodeEnterTransition)
-                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")
-                    .style("opacity", 1);
-
-                node.transition()
-                    .duration(duration)
-                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")
-                    .style("opacity", 1);
-
-
-                // Transition exiting nodes to the parent's new position.
-                node.exit().transition()
-                    .duration(duration)
-                    .attr("transform", () => "translate(" + source.y + "," + source.x + ")")
-                    .style("opacity", 0)
-                    .remove();
-
-
-                // Stash the old positions for transition.
-                root.each((d) => {
-                    d.x0 = d.x;
-                    d.y0 = d.y;
-                });
-
-
-            }
-
-            // Toggle children on click.
-            function click(d) {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                updateMainViewClicked(d.data.name)
-                d3.select(this).remove()
-                update(d);
-            }
-
-            updateTree = update
-
-        }
-
-        function notifyTreeView(node_id) {
-            root.eachBefore((d) => {
-                if (d.selected) {
-                    d.selected = null
-                    d3.select("#id" + d.id).remove()
-                }
-                if (d._children != null) {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                if (d.data.name === node_id) {
-                    d.selected = true
-                    d3.select("#id" + d.id).remove()
-
-                }
-
-
-            })
-            updateTree(root)
-        }
-
-        var input = {{ input_tree|safe }}
-        chart(input)
-
-
-    </script>
-{% endblock %}
+{#{% block tree_view %}#}
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css" media="all" rel="stylesheet">#}
+{#    <style>#}
+{#        .selected {#}
+{#            color: orange;#}
+{#        }#}
+{##}
+{#        .node {#}
+{#            position: relative;#}
+{#            list-style: none;#}
+{#            cursor: default;#}
+{#        }#}
+{##}
+{#        .node span {#}
+{#            margin-right: 3px;#}
+{#        }#}
+{##}
+{#        .node .caret {#}
+{#            font-size: 10px;#}
+{#        }#}
+{##}
+{#        .tree {#}
+{#            height: 1000px;#}
+{#            width: 500px;#}
+{#            overflow: scroll;#}
+{#        }#}
+{##}
+{#        ul {#}
+{#            text-decoration: none;#}
+{#            padding: 0;#}
+{#            list-style-type: none;#}
+{#        }#}
+{##}
+{##}
+{#    </style>#}
+{#    <div class="tree"></div>#}
+{#    <script>#}
+{#        var updateTree;#}
+{#        var root;#}
+{##}
+{#        function chart(data) {#}
+{#            console.log("THis is data ", data)#}
+{#            let margin = {top: 50, right: 40, bottom: 30, left: 20},#}
+{#                height = 600#}
+{#            barHeight = data.children ? Object.keys(data.children[0].data).length * 33 : 0;#}
+{##}
+{#            let i = 0,#}
+{#                duration = 300;#}
+{##}
+{#            let nodeEnterTransition = d3.transition()#}
+{#                .duration(200)#}
+{#                .ease(d3.easeLinear);#}
+{##}
+{#            let svg = d3.select(".tree").append("svg")#}
+{#                .append("g")#}
+{#                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");#}
+{##}
+{##}
+{#            root = d3.hierarchy(data);#}
+{#            root.x0 = 0;#}
+{#            root.y0 = 0;#}
+{#            root.eachAfter((n) => {#}
+{#                n._children = n.children#}
+{#                n.children = null#}
+{#            })#}
+{#            update(root);#}
+{##}
+{##}
+{#            function update(source) {#}
+{##}
+{#                // Compute the flattened node list.#}
+{#                var nodes = root.descendants();#}
+{##}
+{#                var height = Math.max(2000, nodes.length * barHeight + margin.top + margin.bottom);#}
+{##}
+{#                d3.select(".tree svg").transition()#}
+{#                    .attr("height", height)#}
+{#                    .attr("width", 1500)#}
+{##}
+{#                var index = -1;#}
+{#                root.eachBefore((n) => {#}
+{#                    n.x = ++index * barHeight;#}
+{#                    n.y = n.depth * 20;#}
+{#                });#}
+{##}
+{#                // Update the nodes…#}
+{#                var node = svg.selectAll(".node")#}
+{#                    .data(nodes, (d) => d.id || (d.id = ++i));#}
+{##}
+{#                var nodeEnter = node.enter().append("g")#}
+{#                    .attr("class", "node")#}
+{#                    .attr("transform", () => "translate(" + source.y0 + "," + source.x0 + ")")#}
+{#                    .attr("id", (d) => 'id'+d.id)#}
+{#                    .on("click", click)#}
+{#                ;#}
+{##}
+{#                // adding arrows#}
+{#                nodeEnter.append('text')#}
+{#                    .attr('x', -20)#}
+{#                    .attr('y', 2)#}
+{#                    .attr('fill', 'grey')#}
+{#                    .attr('class', 'arrow')#}
+{#                    .attr('class', 'fas')#}
+{#                    .attr('font-size', '12px')#}
+{#                    .text((d) => d.children ? '\uf107' : d._children ? '\uf105' : "");#}
+{##}
+{#                // adding file or folder#}
+{#                nodeEnter.append('text')#}
+{#                    .attr('x', -10)#}
+{#                    .attr('y', 2)#}
+{#                    .attr('fill', (d) => d.children || d._children ? '#005ce6' : '#454545')#}
+{#                    .attr('class', 'fas')#}
+{#                    .attr('font-size', '12px')#}
+{#                    .text((d) => d.children || d._children ? '\uf03a' : '\uf111');#}
+{##}
+{#                // adding file or folder names#}
+{#                nodeEnter.append("text")#}
+{#                    .attr("dy", 3.5)#}
+{#                    .attr("dx", 5.5)#}
+{#                    .text((d) => d.data.name)#}
+{#                    .attr("fill", (d) => d.selected ? "red" : "black");#}
+{##}
+{#                nodeEnter.append("text")#}
+{#                    .each(function (d) {#}
+{#                        let data = []#}
+{#                        for (const [key, value] of Object.entries(d.data.data)) {#}
+{#                            data.push(key + ':' + value)#}
+{#                        }#}
+{##}
+{#                        var text = d3.select(this)#}
+{#                            .attr("dy", 25)#}
+{#                            .attr("dx", 20)#}
+{#                            .text(data[0])#}
+{#                        for (var i = 1; i < data.length; i++) {#}
+{#                            text.append("tspan")#}
+{#                                .attr('x', 20)#}
+{#                                .attr('y', 25 + 20 * i)#}
+{#                                .text(data[i])#}
+{#                        }#}
+{#                    });#}
+{##}
+{#                // Transition nodes to their new position.#}
+{#                nodeEnter.transition(nodeEnterTransition)#}
+{#                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")#}
+{#                    .style("opacity", 1);#}
+{##}
+{#                node.transition()#}
+{#                    .duration(duration)#}
+{#                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")#}
+{#                    .style("opacity", 1);#}
+{##}
+{##}
+{#                // Transition exiting nodes to the parent's new position.#}
+{#                node.exit().transition()#}
+{#                    .duration(duration)#}
+{#                    .attr("transform", () => "translate(" + source.y + "," + source.x + ")")#}
+{#                    .style("opacity", 0)#}
+{#                    .remove();#}
+{##}
+{##}
+{#                // Stash the old positions for transition.#}
+{#                root.each((d) => {#}
+{#                    d.x0 = d.x;#}
+{#                    d.y0 = d.y;#}
+{#                });#}
+{##}
+{##}
+{#            }#}
+{##}
+{#            // Toggle children on click.#}
+{#            function click(d) {#}
+{#                if (d.children) {#}
+{#                    d._children = d.children;#}
+{#                    d.children = null;#}
+{#                } else {#}
+{#                    d.children = d._children;#}
+{#                    d._children = null;#}
+{#                }#}
+{#                updateMainViewClicked(d.data.name)#}
+{#                d3.select(this).remove()#}
+{#                update(d);#}
+{#            }#}
+{##}
+{#            updateTree = update#}
+{##}
+{#        }#}
+{##}
+{#        function notifyTreeView(node_id) {#}
+{#            root.eachBefore((d) => {#}
+{#                if (d.selected) {#}
+{#                    d.selected = null#}
+{#                    d3.select("#id" + d.id).remove()#}
+{#                }#}
+{#                if (d._children != null) {#}
+{#                    d.children = d._children;#}
+{#                    d._children = null;#}
+{#                }#}
+{#                if (d.data.name === node_id) {#}
+{#                    d.selected = true#}
+{#                    d3.select("#id" + d.id).remove()#}
+{##}
+{#                }#}
+{##}
+{##}
+{#            })#}
+{#            updateTree(root)#}
+{#        }#}
+{##}
+{#        var input = {{ input_tree|safe }}#}
+{#        chart(input)#}
+{##}
+{##}
+{#    </script>#}
+{#{% endblock %}#}

@@ -11,7 +11,7 @@ headers = {
 
 def load_countries():
     url = "https://priceline-com-provider.p.rapidapi.com/v2/hotels/downloadCountries"
-    querystring = {"limit": "500"}
+    querystring = {"limit": "300"}
     response = requests.get(url, headers=headers, params=querystring)
     data = response.json()
     return data['getSharedBOF2.Downloads.Hotel.Countries']['results']['countries']
@@ -19,7 +19,7 @@ def load_countries():
 
 def load_cities():
     url = "https://priceline-com-provider.p.rapidapi.com/v2/hotels/downloadCities"
-    querystring = {"limit": "1000"}
+    querystring = {"limit": "500"}
     response = requests.get(url, headers=headers, params=querystring)
     data = response.json()
     return data['getSharedBOF2.Downloads.Hotel.Cities']['results']['cities']
@@ -27,7 +27,7 @@ def load_cities():
 
 def load_hotels():
     url = "https://priceline-com-provider.p.rapidapi.com/v2/hotels/downloadHotels"
-    querystring = {"limit": "1000", "language": "fr-FR"}
+    querystring = {"limit": "500", "language": "fr-FR"}
     response = requests.get(url, headers=headers, params=querystring)
     data = response.json()
     return data['getSharedBOF2.Downloads.Hotel.Hotels']['results']['hotels']
@@ -53,57 +53,63 @@ def load_graph():
     city_nodes = {}
     hotel_nodes = {}
 
+    # Function to check if a value is defined (not None and not an empty string)
+    def is_defined(value):
+        return value is not None and value != ""
+
     for country in countries:
         country_data = {
-            "country": countries[str(country)]["country"],
-            "country_code": countries[str(country)]["country_code_ppn"]
+            "country": countries[str(country)]["country"] if is_defined(countries[str(country)]["country"]) else "",
+            "country_code": countries[str(country)]["country_code_ppn"] if is_defined(countries[str(country)]["country_code_ppn"]) else ""
         }
-        country_node = graph.add_node(country_data, countries[str(country)]["country_code_ppn"])
-        country_nodes[countries[str(country)]["country_code_ppn"]] = country_node
+        if is_defined(country_data["country"]) and is_defined(country_data["country_code"]):
+            country_node = graph.add_node(country_data, countries[str(country)]["country_code_ppn"])
+            country_nodes[countries[str(country)]["country_code_ppn"]] = country_node
 
     for city in cities:
         city_data = {
-            "city": cities[str(city)]["city"],
-            "state": cities[str(city)]["state"],
-            "latitude": cities[str(city)]["latitude"],
-            "longitude": cities[str(city)]["longitude"],
-            "timezone": cities[str(city)]["timezone"],
-            "hotel_count": cities[str(city)]["hotel_count"],
-            "country_code": cities[str(city)]["country_code"]  # connection
+            "city": cities[str(city)]["city"] if is_defined(cities[str(city)]["city"]) else "",
+            "state": cities[str(city)]["state"] if is_defined(cities[str(city)]["state"]) else "",
+            "latitude": cities[str(city)]["latitude"] if is_defined(cities[str(city)]["latitude"]) else "",
+            "longitude": cities[str(city)]["longitude"] if is_defined(cities[str(city)]["longitude"]) else "",
+            "timezone": cities[str(city)]["timezone"] if is_defined(cities[str(city)]["timezone"]) else "",
+            "hotel_count": cities[str(city)]["hotel_count"] if is_defined(cities[str(city)]["hotel_count"]) else "",
+            "country_code": cities[str(city)]["country_code"] if is_defined(cities[str(city)]["country_code"]) else ""  # connection
         }
-        city_node = graph.add_node(city_data, cities[str(city)]["cityid_ppn"])
-        city_nodes[cities[str(city)]["cityid_ppn"]] = city_node
+        if is_defined(city_data["city"]):
+            city_node = graph.add_node(city_data, cities[str(city)]["cityid_ppn"])
+            city_nodes[cities[str(city)]["cityid_ppn"]] = city_node
 
-        country_id = cities[str(city)]["country_code"]
-        if country_id in country_nodes.keys():
-            graph.add_edge(city_node, country_nodes[country_id])
-
+            country_id = cities[str(city)]["country_code"]
+            if country_id in country_nodes.keys():
+                graph.add_edge(city_node, country_nodes[country_id])
 
     for hotel in hotels:
         hotel_data = {
-            "name": hotels[str(hotel)]["hotel_name"],
-            "hotel_type": hotels[str(hotel)]["hotel_type"],
-            "star_rating": hotels[str(hotel)]["star_rating"],
-            "review_rating": hotels[str(hotel)]["review_rating"],
-            "room_count": hotels[str(hotel)]["room_count"],
-            "check_in": hotels[str(hotel)]["check_in"],
-            "check_out": hotels[str(hotel)]["check_out"],
-
+            "name": hotels[str(hotel)]["hotel_name"] if is_defined(hotels[str(hotel)]["hotel_name"]) else "",
+            "hotel_type": hotels[str(hotel)]["hotel_type"] if is_defined(hotels[str(hotel)]["hotel_type"]) else "",
+            "review_rating": hotels[str(hotel)]["review_rating"] if is_defined(hotels[str(hotel)]["review_rating"]) else "",
+            "room_count": hotels[str(hotel)]["room_count"] if is_defined(hotels[str(hotel)]["room_count"]) else "",
+            "check_in": hotels[str(hotel)]["check_in"] if is_defined(hotels[str(hotel)]["check_in"]) else "",
+            "check_out": hotels[str(hotel)]["check_out"] if is_defined(hotels[str(hotel)]["check_out"]) else "",
         }
-        hotel_node = graph.add_node(hotel_data, hotels[str(hotel)]["hotelid_ppn"])
+        if is_defined(hotel_data["name"]):
+            hotel_node = graph.add_node(hotel_data, hotels[str(hotel)]["hotelid_ppn"])
 
-        city_id = hotels[str(hotel)]["cityid_ppn"]
-        country_id = hotels[str(hotel)]["country_code"]
+            city_id = hotels[str(hotel)]["cityid_ppn"]
+            country_id = hotels[str(hotel)]["country_code"]
 
-        if city_id in city_nodes:
-            graph.add_edge(hotel_node, city_nodes[city_id])
+            if city_id in city_nodes:
+                graph.add_edge(hotel_node, city_nodes[city_id])
 
-        # if country_id in country_nodes: # add?
-        #     graph.add_edge(hotel_node, country_nodes[country_id])
+            # if country_id in country_nodes: # add?
+            #     graph.add_edge(hotel_node, country_nodes[country_id])
 
     return graph
 
 
+
+#
 # graph = load_graph()
 # print(graph)
 
