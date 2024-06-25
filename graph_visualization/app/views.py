@@ -8,6 +8,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 
 from core.src.use_cases.loader import Loader
+from core.src.use_cases.tree_view import TreeView
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +30,6 @@ def index(request):
 
 @csrf_exempt
 def generate(request):
-    print("hej tu sam pravim graf")
     return render_new_graph(request)
 
 
@@ -47,7 +47,6 @@ def clear_filters(request):
 
 def set_workspace(request, number: int):
     pass
-
 
 def render_new_graph(request):
     global workspace_id, source_id, visualizer_id
