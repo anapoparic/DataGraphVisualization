@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "block_visualizer_plugin"
+authors = [
+    {name = "Vesna Vasic"}
+]
+description = "Block visualizer plugin for graph visualization"
+requires-python = ">=3.7"
+version = "0.1"
+dependencies = [
+    "jinja2>=3.1.2"
+]
+
+[project.scripts]
+
+[project.entry-points."graph.visualizers"]
+bv = "block_visualizer.src.plugin.block_visualizer:GraphVisualizer"
