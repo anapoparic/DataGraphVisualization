@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: block_visualizer_plugin
+Version: 0.1
+Summary: Block visualizer plugin for graph visualization
+Author: Vesna Vasic
+Requires-Python: >=3.7
+Requires-Dist: jinja2>=3.1.2

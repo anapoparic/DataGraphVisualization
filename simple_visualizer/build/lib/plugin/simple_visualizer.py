@@ -7,7 +7,7 @@ from api.src.types.graph import Graph
 
 
 def transform_nodes(nodes):
-    return [{"node_id": node.node_id, "data": node.data} for node in nodes]
+    return [{"node_id": node.node_id, "data": node.data or None} for node in nodes]
 
 
 def transform_edges(edges):
