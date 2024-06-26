@@ -1,87 +1,117 @@
 <style>
     #visualization {
         width: 100%;
-        height: 100%;
+        height: 90%;
+        border-radius: 2% 2% 2% 2%;
+    }
+
+    #node-info-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        background: white;
+        height: 9%;
+        border-radius: 0 0 13% 13%;
+        bottom: 0;
     }
 
     #node-info {
-        position: relative;
         padding: 10px;
         background: white;
-        font-size: 10px;
-        width: 90%;
-        margin: 10px auto;
-        margin-bottom: -60px;
+        font-size: 12px;
         border-radius: 15px;
-        height: 30px;
-        word-wrap: break-word;
-        z-index: 1;
+        text-align: center;
+        height: 60%;
+        width: auto;
     }
 
+    .node-info .title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .node-info .content {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .node-info .content span {
+        margin-right: 10px;
+    }
+
+    .node-info .border-line {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
 </style>
-<div id="node-info"></div>
+
 <svg id="visualization">
     {{ visualization_html|safe }}
 </svg>
 
+<div id="node-info-container">
+    <div id="node-info"></div>
+</div>
+
 <script>
-    var clicked_object = null
+    var clicked_object = null;
 
     function mouseOverFunction(d) {
-        let info = "";
+        let info = `<div class="node-info">
+                        <div class="title">NODE INFO</div>
+                        <div class="border-line"></div>
+                        <div class="content">`;
         for (const [key, value] of Object.entries(d.data)) {
-            info += key + ' : ' + value + ' | '
+            info += `<span>| <strong>${key}</strong>: ${value} </span>`;
         }
-        document.getElementById("node-info").innerHTML = info
+        info += "|</div></div>";
+        document.getElementById("node-info").innerHTML = info;
     }
 
     function clickFunction(d) {
         if (clicked_object != null) {
-            clicked_object.clicked = null
+            clicked_object.clicked = null;
         }
-        clicked_object = d
-        d.clicked = true
-        update()
+        clicked_object = d;
+        d.clicked = true;
+        update();
         notifyTreeView(d.node_id);
-
-
     }
 
     var nodes = d3.selectAll("#graph g g")
-        .on('mouseover', function (d) {
+        .on('mouseover', function(d) {
             mouseOverFunction(d);
         })
-        .on('click', function (d) {
+        .on('click', function(d) {
             clickFunction(d);
-        })
-
+        });
 
     function updateMainViewClicked(node_id) {
-        nodes.each(function (node) {
+        nodes.each(function(node) {
             if (node.node_id === node_id) {
                 if (clicked_object != null) {
-                    clicked_object.clicked = null
+                    clicked_object.clicked = null;
                 }
-                clicked_object = node
-                node.clicked = true
-                update()
+                clicked_object = node;
+                node.clicked = true;
+                update();
             }
-        })
+        });
     }
 
-    let update = function () {
-        nodes.each(function () {
+    let update = function() {
+        nodes.each(function() {
             const parent = d3.select(this);
             parent.select("text")
-                .attr("fill", function (parent) {
+                .attr("fill", function(parent) {
                     if (parent.clicked) {
-                        return "red"
+                        return "red";
                     } else {
-                        return "black"
+                        return "black";
                     }
-                })
-        })
-    }
-
-
+                });
+        });
+    };
 </script>

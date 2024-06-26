@@ -1,0 +1,191 @@
+{% block tree_view %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css" media="all" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        .selected {
+            color: #363636;
+        }
+
+        .node {
+            color: #167351;
+            position: relative;
+            list-style: none;
+            cursor: default;
+        }
+
+        .node span {
+            margin-right: 3px;
+        }
+
+        .node .caret {
+            font-size: 10px;
+        }
+
+        .tree {
+            width: 100%;
+            height: 100%;
+            color: #363636;
+            font-family: Arial, Helvetica, sans-serif;
+            overflow: scroll;
+        }
+
+        ul {
+            text-decoration: none;
+            padding: 0;
+            list-style-type: none;
+        }
+    </style>
+    <div class="tree"></div>
+    <script>
+        var updateTree;
+        var root;
+
+        function chart(data) {
+            console.log("This is data ", data);
+            let margin = {top: 50, right: 40, bottom: 30, left: 20},
+                height = 600;
+            let baseBarHeight = 50; // Base bar height for initial spacing
+            let i = 0,
+                duration = 300;
+
+            let nodeEnterTransition = d3.transition()
+                .duration(200)
+                .ease(d3.easeLinear);
+
+            let svg = d3.select(".tree").append("svg")
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            root = d3.hierarchy(data);
+            root.x0 = 0;
+            root.y0 = 0;
+            root.eachAfter((n) => {
+                n._children = n.children;
+                n.children = null;
+            });
+            update(root);
+
+            function update(source) {
+                var nodes = root.descendants();
+                var height = Math.max(2000, nodes.length * baseBarHeight + margin.top + margin.bottom);
+
+                d3.select(".tree svg").transition()
+                    .attr("height", height)
+                    .attr("width", 1500);
+
+                var index = -1;
+                root.eachBefore((n) => {
+                    let barHeight = baseBarHeight;
+                    if (n.depth === 1) {
+                        barHeight = baseBarHeight * 2;
+                    } else if (n.depth === 2) {
+                        barHeight = baseBarHeight * 2.5;
+                    } else if (n.depth === 3) {
+                        barHeight = baseBarHeight * 3.5;
+                    }
+                    n.x = ++index * barHeight;
+                    n.y = n.depth * 20;
+                });
+
+                var node = svg.selectAll(".node")
+                    .data(nodes, (d) => d.id || (d.id = ++i));
+
+                var nodeEnter = node.enter().append("g")
+                    .attr("class", "node")
+                    .attr("transform", () => "translate(" + source.y0 + "," + source.x0 + ")")
+                    .attr("id", (d) => 'id' + d.id)
+                    .on("click", click);
+
+                nodeEnter.append('text')
+                    .attr('x', -10)
+                    .attr('y', 2)
+                    .attr('fill', 'grey')
+                    .attr('class', 'arrow fas')
+                    .attr('font-size', '12px')
+                    .text((d) => d.children ? '\uf078' : d._children ? '\uf054' : "");
+
+                nodeEnter.append("text")
+                    .attr("dy", 3.5)
+                    .attr("dx", 10)
+                    .text((d) => d.data.name)
+                    .attr("fill", (d) => d.selected ? "red" : "black");
+
+                nodeEnter.append("text")
+                    .each(function (d) {
+                        let data = [];
+                        for (const [key, value] of Object.entries(d.data.data)) {
+                            data.push(key + ':' + value);
+                        }
+
+                        var text = d3.select(this)
+                            .attr("dy", 25)
+                            .attr("dx", 20)
+                            .text(data[0]);
+                        for (var i = 1; i < data.length; i++) {
+                            text.append("tspan")
+                                .attr('x', 20)
+                                .attr('y', 25 + 20 * i)
+                                .text(data[i]);
+                        }
+                    });
+
+                nodeEnter.transition(nodeEnterTransition)
+                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")
+                    .style("opacity", 1);
+
+                node.transition()
+                    .duration(duration)
+                    .attr("transform", (d) => "translate(" + d.y + "," + d.x + ")")
+                    .style("opacity", 1);
+
+                node.exit().transition()
+                    .duration(duration)
+                    .attr("transform", () => "translate(" + source.y + "," + source.x + ")")
+                    .style("opacity", 0)
+                    .remove();
+
+                root.each((d) => {
+                    d.x0 = d.x;
+                    d.y0 = d.y;
+                });
+            }
+
+            function click(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                updateMainViewClicked(d.data.name);
+                d3.select(this).remove();
+                update(d);
+            }
+
+            updateTree = update;
+        }
+
+        function notifyTreeView(node_id) {
+            root.eachBefore((d) => {
+                if (d.selected) {
+                    d.selected = null;
+                    d3.select("#id" + d.id).remove();
+                }
+                if (d._children != null) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                if (d.data.name === node_id) {
+                    d.selected = true;
+                    d3.select("#id" + d.id).remove();
+                }
+            });
+            updateTree(root);
+        }
+
+        var input = {{ input_tree | safe }};
+        chart(input);
+    </script>
+{% endblock %}

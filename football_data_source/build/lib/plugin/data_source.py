@@ -4,7 +4,7 @@ import requests
 from api.src.types.graph import Graph
 
 headers = {
-    'x-rapidapi-key': "796efde4c7msh2770f60ac7fbfe9p175e14jsnf4dc688369f1",
+    'x-rapidapi-key': "2cd29e0172msh9c1e1595c3ad4f8p1600e4jsnb1166895f355",
     'x-rapidapi-host': "euro-20242.p.rapidapi.com"
 }
 
@@ -33,7 +33,7 @@ def add_edge(graph, source, destination):
 
 def load_graph():
     graph_name = "Football Graph"
-    graph = Graph(name=graph_name, edges=[], nodes=[])
+    graph = Graph(name=graph_name, edges=[], nodes=[], root=None)
 
     players = load_players()
     groups = load_groups()

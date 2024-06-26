@@ -4,8 +4,9 @@ REM This script is used to build all necessary python components and run Django 
 
 REM Install necessary Python components
 pip install .\football_data_source
-pip install .\hotel_data_source
+pip install .\hotel_data_soruce
 pip install .\simple_visualizer
+pip install .\block_visualizer
 
 REM Run Django website
 @REM cd %1

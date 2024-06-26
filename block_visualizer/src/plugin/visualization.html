@@ -1,0 +1,200 @@
+{% block complex_view %}
+<style>
+
+.node {
+  cursor: pointer;
+  color: #d62728;
+}
+
+.link {
+  fill: none;
+  stroke: #d62728;
+  stroke-width: 1.5px;
+}
+
+.node-block {
+  stroke: dimgray;
+  fill: #ff9896;
+  pointer-events: all;
+}
+
+#rct{
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+}
+
+.node-block rect {
+  fill: lightgrey;
+  stroke: #ff9896;
+  stroke-width: 2px;
+}
+
+</style>
+
+<script>
+
+    function nodeClick(el){
+        console.log(el);
+      // alert("ID: "+ el.textContent);
+    }
+
+    var nodes = {{ nodes | safe }};
+    var links = {{ edges | safe }};
+
+    var nodes_dict = nodes.reduce(function(acc, node) {
+        acc[node.node_id] = node;
+        return acc;
+    }, {});
+
+    links.forEach(function(link) {
+        link.source = nodes_dict[link.source];
+        link.target = nodes_dict[link.target];
+    });
+
+    var width = 1000;
+    var height = 1000;
+
+    var force = d3.forceSimulation()
+        .force('link', d3.forceLink().id(function(d) { return d.node_id; }).distance(300))
+        .force('charge', d3.forceManyBody().strength(-1500))
+        .force('center', d3.forceCenter(width / 2, height / 2));
+
+    var drag = d3.drag()
+        .on('start', dragstart)
+        .on('drag', dragged)
+        .on('end', dragend);
+
+    var zoom = d3.zoom()
+        .scaleExtent([0.2, 10])
+        .on('zoom', zoomed);
+
+    var svg = d3.select('#visualization')
+        .attr('width', width)
+        .attr('height', height)
+        .call(zoom);
+
+    var container = svg.append('g');
+
+    var rect = container.append("rect")
+        .attr("id","rct")
+        .attr("width", 1600)
+        .attr("height", 1000)
+
+    var link = container.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
+
+    var node = container.selectAll('.node')
+        .data(nodes)
+        .enter().append('g')
+        .attr('class', 'node-block')
+        .attr('id', function(d) { return d.name; })
+
+        .call(drag);
+
+    node.append('rect')
+        .attr('width', function(d) { return calculateMaxWidth(d); })
+        .attr('height', function(d) { return 40 + Object.keys(d.data).length * 15; })
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .style('pointer-events', 'all');
+
+    node.append('text')
+        .attr('x', 10)
+        .attr('y', 20)
+        .text(function(d) { return "ID: " + d.node_id; });
+
+    node.append('line')
+        .attr('x1', 0)
+        .attr('y1', 25)
+        .attr('x2', function(d) { return calculateMaxWidth(d);  })
+        .attr('y2', 25)
+        .style('stroke', '#d62728')
+        .style('stroke-width', '3px');
+
+    node.each(function(d) {
+        var group = d3.select(this);
+
+        var keyValuePairs = group.selectAll('.key-value-pair')
+            .data(d3.entries(d.data))
+            .enter().append('text')
+            .attr('class', 'key-value-pair')
+            .attr('x', 10)
+            .attr('y', function(_, i) { return 40 + i * 15; })
+            .text(function(entry) {
+                var keyValue = entry.key + ': ' + entry.value;
+                return keyValue.length > 50 ? keyValue.slice(0, 47) + '...' : keyValue;
+            });
+    });
+
+    force.nodes(nodes)
+        .on('tick', tick);
+
+    force.force('link').links(links);
+
+    function tick() {
+        node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+
+        link.attr('x1', function(d) { return d.source.x; })
+            .attr('y1', function(d) { return d.source.y; })
+            .attr('x2', function(d) { return d.target.x; })
+            .attr('y2', function(d) { return d.target.y; });
+    }
+
+    function zoomed() {
+        container.attr('transform', d3.event.transform);
+
+        const centerTransform = d3.event.transform;
+
+        const scaleX = centerTransform.k;
+        const scaleY = centerTransform.k;
+        const translateX = centerTransform.x;
+        const translateY = centerTransform.y;
+
+        const rectWidth = 1600 / scaleX;
+        const rectHeight = 1000 / scaleY;
+
+        const rectX = -translateX / scaleX;
+        const rectY = -translateY / scaleY;
+
+        rect.attr("x", rectX)
+            .attr("y", rectY)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+    }
+
+    function dragstart(d) {
+        if (!d3.event.active) force.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragend(d) {
+        if (!d3.event.active) force.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    function calculateMaxWidth(d) {
+        var maxWidth = String(d.node_id).length;
+        d3.entries(d.data).forEach(function (entry) {
+              var entryLength = (entry.key + ': ' + entry.value).length;
+              maxWidth = Math.max(maxWidth, entryLength);
+        });
+        if(maxWidth > 50){
+            maxWidth = 50;
+        }else if(maxWidth < 20){
+            maxWidth = 20;
+        }
+        return maxWidth * 10;
+    }
+
+</script>
+{% endblock %}

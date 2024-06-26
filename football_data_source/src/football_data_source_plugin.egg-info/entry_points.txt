@@ -1,2 +1,2 @@
 [graph.sources]
-load = plugin.data_source
+load = football_data_source.src.plugin.data_source

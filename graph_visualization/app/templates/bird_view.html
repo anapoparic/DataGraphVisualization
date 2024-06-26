@@ -31,6 +31,7 @@
         var y = targetSVG.select("g").node().getBBox().y;
 
         targetSVG.select("g").attr("transform", "translate(" + [-x * scale, -y * scale] + ") scale(" + scale + ")");
+        
 
     }
 
