@@ -4,7 +4,7 @@ import requests
 from api.src.types.graph import Graph
 
 headers = {
-    'x-rapidapi-key': "122628323amshf32c0dab3928ddep10cbcbjsnd90f9d380d7e",
+    'x-rapidapi-key': "2cd29e0172msh9c1e1595c3ad4f8p1600e4jsnb1166895f355",
     'x-rapidapi-host': "euro-20242.p.rapidapi.com"
 }
 
@@ -77,10 +77,8 @@ def load_graph():
     return graph
 
 
-
 # graph2 = load_graph()
 # print(graph2)
-
 
 
 class DataSource(SourcePlugin):

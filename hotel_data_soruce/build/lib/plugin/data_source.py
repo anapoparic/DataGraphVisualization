@@ -4,7 +4,7 @@ from api.src.types.config import Config
 from api.src.types.graph import Graph
 
 headers = {
-    "x-rapidapi-key": "4dc61e47e9msh1cde259b7972bdfp15706djsnc6fc2517cda6",
+    "x-rapidapi-key": "2cd29e0172msh9c1e1595c3ad4f8p1600e4jsnb1166895f355",
     "x-rapidapi-host": "priceline-com-provider.p.rapidapi.com"
 }
 

@@ -2,63 +2,71 @@
 
 {% block content %}
     <div id="view">
-        <div class="workspace-wrapper">
-            <span class="workspace-title">Workspaces</span>
-            <div class="workspaces">
-                {% if workspace_id == 1 %}
-                    <a href="{% url 'workspace' 2 %}" class="workspace_button">Next</a>
-                {% elif workspace_id == 2 %}
-                    <a href="{% url 'workspace' 1 %}" class="workspace_button">Previous</a>
-                {% endif %}
-            </div>
-        </div>
+        
         <div id="top_bar">
-            <div id="select">
-                <form id="bar_form" method="post" action="{% url 'graph_visualize' %}" style="display: flex; align-items: center;">
-                    <div class="selection-item" style="margin-right: 20px;">
-                        <label for="sources">Select Data Source:</label>
-                        <select id="sources" name="sources" onchange="handleSelectChange('sources')">
-                            {% for source_id, source in sources.items %}
-                                {% if source.id == source_id %}
-                                    <option selected value="{{ source.id }}">{{ source.plugin.name }}</option>
-                                {% else %}
-                                    <option value="{{ source.id }}">{{ source.plugin.name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="selection-item" style="margin-right: 20px;">
-                        <label for="visualizers">Select Visualizer:</label>
-                        <select id="visualizers" name="visualizers" onchange="handleSelectChange('visualizers')">
-                            {% for visualizer_id, visualizer in visualizers.items %}
-                                {% if visualizer_id == visualizer.plugin_id %}
-                                    <option selected value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
-                                {% else %}
-                                    <option value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                   
-                </form>
+            <div class="selects">
+                <div id="select">
+                    <form id="bar_form" method="post" action="{% url 'graph_visualize' %}" style="display: flex; align-items: center;">
+                        <div class="selection-item" style="margin-right: 2%;">
+                            <select id="sources" name="sources" onchange="handleSelectChange('sources')">
+                                <option value="" disabled selected>Select Data Source</option>
+                                {% for source_id, source in sources.items %}
+                                    {% if source.id == source_id %}
+                                        <option selected value="{{ source.id }}">{{ source.plugin.name }}</option>
+                                    {% else %}
+                                        <option value="{{ source.id }}">{{ source.plugin.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="selection-item" style="margin-right: 0.5%;">
+                            <select id="visualizers" name="visualizers" onchange="handleSelectChange('visualizers')">
+                                <option value="" disabled selected>Select Visualizer</option>
+                                {% for visualizer_id, visualizer in visualizers.items %}
+                                    {% if visualizer_id == visualizer.plugin_id %}
+                                        <option selected value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
+                                    {% else %}
+                                        <option value="{{ visualizer_id }}">{{ visualizer.plugin.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="button_generate center" type="button" onclick="submitGenerateForm()">Generate Graph</button>
             </div>
             <form id="filter" method="post" action="{% url 'search_filter_graph' %}">
-                <input id="query" type="text" name="query" placeholder="Search here.."/>
-                <a href="{% url 'clear_search_filter_input' %}" id="clear_button">Clear</a>
+                <div class="search-wrapper">
+                    <input id="query" type="text" name="query" placeholder="Type here.." />
+                    <a href="{% url 'clear_search_filter_input' %}" id="clear_button" class="fa fa-remove"></a>
+                </div>
                 <button class="button_primary" type="submit">Search/Filter</button>
-            </form>
-            <div class="buttons" style="display: flex; gap: 10px;">
-                <button class="button_primary center" type="button" onclick="submitGenerateForm()">Generate Graph</button>
+            </form>            
+            <div class="workspace-wrapper">
+                {% if workspace_id == 1 %}
+                    <a href="{% url 'workspace' 2 %}" class="workspace_button">Next Workspace</a>
+                {% elif workspace_id == 2 %}
+                    <a href="{% url 'workspace' 1 %}" class="workspace_button">Previous Workspace</a>
+                {% endif %}
             </div>
+            
         </div>
-        <div id="graph">
-            {% include 'main_view.html' %}
-        </div>
-        <div id="bird-view">
-            {% include 'bird_view.html' %}
-        </div>
-        <div id="tree-view">
-            {% include 'tree_view.html' %}
+
+        <div class="main-content">
+            <div id="graph">
+                {% include 'main_view.html' %}
+            </div>
+            <div class="right-side">
+                <div id="bird-view">
+                    {% include 'bird_view.html' %}
+                </div>
+                <div id="tree-view">
+                    {% include 'tree_view.html' %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -68,11 +76,23 @@
             var selectedValue = selectElement.options[selectElement.selectedIndex].value;
             console.log('Select element with id "' + selectId + '" changed to: ' + selectedValue);
         }
-
+    
         function submitGenerateForm() {
             var form = document.getElementById('bar_form');
+            var sourcesSelect = document.getElementById('sources');
+            var visualizersSelect = document.getElementById('visualizers');
+    
+            var selectedSource = sourcesSelect.options[sourcesSelect.selectedIndex].value;
+            var selectedVisualizer = visualizersSelect.options[visualizersSelect.selectedIndex].value;
+    
+            if (!selectedSource || !selectedVisualizer) {
+                alert("Please select both Data Source and Visualizer.");
+                return;
+            }
+    
             form.action = "{% url 'graph_visualize' %}";
             form.submit();
         }
     </script>
+    
 {% endblock %}
