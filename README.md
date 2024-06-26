@@ -46,5 +46,4 @@ After running the setup script, a link will be provided to access the web applic
 
 ## Project Structure:
 The project structure is organized as follows:
-- `main`: Main branch containing the stable version of the project.
-- `develop`: Branch for developing new features.
+- `develop`: Branch containing the stable version of the project.
